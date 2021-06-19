@@ -1,0 +1,32 @@
+
+.glass{
+    background: rgba( 255,255,255 , 0.56 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    backdrop-filter: blur( 10.0px );
+    -webkit-backdrop-filter: blur( 10.0px );
+    border-radius: 15px;
+}
+
+.alert-error{
+    background-color: rgba(173, 16, 16, 0.295);
+}
+
+.custom-btn{
+	background: linear-gradient(#23a6d5, #23d5ab);
+	border:0px;
+	border-radius:15px;	
+	color:white;
+	padding:15px;
+	color:white;
+	font-weight:bold;
+
+}
+.custom-btn:hover{
+	background: linear-gradient(#ee7752, #e73c7e);
+	box-shadow: 0 8px 10px 0 rgba(34, 34, 34, 0.3);
+	border-radius:15px;	
+	color:white;
+	font-weight:bold;
+}
+
+

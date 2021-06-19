@@ -1,0 +1,273 @@
+
+{% extends "header.html" %}
+
+{% block content %} 
+
+{% load static %}
+{% load crispy_forms_tags %}         
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" />
+<style>
+    .box{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+        width:120px;
+        height:140px;
+        padding:20px;
+        font-size:20px;
+        margin:10px;
+    }
+    .delete{
+        display:none;
+        color:red;
+    }
+    .modal_delete:hover{
+        color:red;
+    }
+    .box:hover{
+        transform: scale(0.97);
+    }
+    .box:hover .delete{
+        display:block;
+    }
+    .delete:hover{
+        transform: scale(1.2);
+    }
+
+</style>
+<div class="mt-5">
+	<div class="row" >
+			<div class="col-md-3 mt-2">
+				<div class="d-flex flex-column justify-content-start align-items-center glass pb-4" style="height:80vh;">
+                    <img class="img-responsive mb-4 mt-5" style="width:30%;" src="{% static 'img/lens2.png' %}" alt="LOGO">
+					<h1 class="text-center">📸</h1>
+
+                    <h4 class="text-center">Welcome {{user.username}}</h4>
+                    <h4 class="text-center" style="margin-top:50px;"><a href="{% url 'logout' %}" class="btn custom-btn"><span class="fas fa-sign-out-alt"></span> Logout</a></h4>
+				</div>
+			</div>
+			<div class="col-md-9 mt-2">
+				
+				<div class="glass" style="min-height:80vh;">
+                    <div class="row d-flex justify-content-center" style="padding:20px;" id="top">
+                        <div class="col-md-2 btn btn-lg custom-btn mx-3 mt-3" style="background:grey;" onclick="window.history.back()"><span class="fas fa-arrow-left"></span> Return</div>                        
+                        <div data-bs-toggle="modal" data-bs-target="#uploadModal" class="col-md-2 btn btn-lg custom-btn mx-3 mt-3" style="background:var(--primary);" ><span class="fas fa-upload"></span> Upload Image</div>
+                        <div data-bs-toggle="modal" data-bs-target="#folderModal" class="col-md-2 btn btn-lg custom-btn mx-3 mt-3" style="background:rgb(28, 172, 28);" ><span class="fas fa-folder"></span> New Folder</div>
+                        
+                    </div>
+                    <hr style="height:2px;margin:10px;" class="">
+                    <div class="row d-flex flex-row justify-content-center mt-3" id="top">
+                        <h4>Current Directory : {{home_dir.directory_name | title }}</h4>
+                    </div>
+                    
+					<div class="row d-flex flex-row justify-content-start enclose" style="padding:50px;" id="main">
+
+                        {% for dir in dirs %}                           
+                            {% if dir.is_directory %}
+                            <div id="{{dir.pk}}" ondblclick="navigate(event,'{% url 'dashboard' dir=dir.pk %}')" class="glass box">
+                                <div onclick="delete_node(event)" class="delete fas fa-times-circle" style="margin-bottom:20px;"></div>
+                                <span class="fas fa-folder"></span>
+                                <div id="name{{dir.pk}}">{{dir.directory_name | title}}</div>
+                            </div>
+                            {% else %}
+                            <div id="{{dir.pk}}" ondblclick="navigate(event,'{% url 'edit' dir=dir.pk %}')" class="glass box bg-primary text-white">
+                                <div onclick="delete_node(event)" class="delete fas fa-times-circle" style="margin-bottom:20px;color:tomato"></div>
+                                <span class=" fas fa-file"></span>
+                                <div id="name{{dir.pk}}">{{dir.directory_name | title}}</div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}  
+                    </div>
+				</div>
+			</div>
+		
+	</div>
+</div>
+
+  
+<!-- Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">UPLOAD IMAGE</h4>
+                <div style="font-size:25px;" id="close_upload" class=" modal_delete fas fa-times-circle" data-bs-dismiss="modal" aria-label="Close"></div>
+            </div>
+        <div class="modal-body">
+            <div class="form-group col-md-8" id="form_upload">
+                <label for="directory_name">Image Name*</label>
+                <input class="form-control" type="text" id="id_directory_name" name="directory_name" required>
+                <label class="mt-3" for="image_path">Choose File*</label>
+                <input style="background-color: transparent;padding:0px;border:0px;" class="form-control-file" type="file" id="id_image_path" name='image_path' accept="image/*" required>
+                <div class="form-group mt-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button id="submit_upload" onclick="upload_image(event)" type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </div>  
+        </div>
+        
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="folderModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h4 class="modal-title" id="exampleModalLabel">CREATE FOLDER</h4>
+                <div style="font-size:25px;" id="close_create" class=" modal_delete fas fa-times-circle" data-bs-dismiss="modal" aria-label="Close"></div>
+            </div>
+        <div class="modal-body">
+            <div class="form-group" id="form_upload">
+                <label for="directory_name">Folder Name</label>
+                <input class="form-control" type="text" id="id_directory_name2" name="directory_name" required>
+                <div class="form-group mt-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button id="submit_folder" onclick="create_folder()" type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </div>  
+        </div>
+        
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var upload_file_url = "/api/{{home_dir.pk}}"
+    var token = '{{csrf_token}}';
+    var formData = new FormData()
+    const input = document.getElementById('id_image_path');
+
+    const upload_image = () => {
+        formData.append("directory_name", document.getElementById('id_directory_name').value)
+        formData.append("image_path", input.files[0])
+
+        
+        fetch(upload_file_url, { // Your POST endpoint
+          method: 'POST',
+          headers: {
+            "X-CSRFToken": token,
+            "Accept":'application/json'
+          },
+          body: formData // This is your file object
+        }).then(
+          response => response.json() // if the response is a JSON object
+        ).then(
+          (json) => {
+                message(json.info, "info")
+                if(json.info == 'Image Uploaded Successfully'){
+                  create_ui(json.dir, json.directory_name, false)
+                }
+                $('#close_upload').trigger('click')
+                console.log(json)
+          }
+        ).catch(
+          error => console.log(error) // Handle the error response object
+        );
+      };
+
+      const create_folder = () => {
+
+        fetch(upload_file_url, { // Your POST endpoint
+          method: 'PUT',
+          headers: {
+            "X-CSRFToken": token,
+            "Accept":'application/json',
+            "Content-Type":'application/json',  
+          },
+          body:JSON.stringify({ name: document.getElementById('id_directory_name2').value}) // This is your file object
+        }).then(
+          response => response.json() // if the response is a JSON object
+        ).then(
+          (json) => {
+            message(json.info, "info")
+            if(json.info == 'Folder Created Sucessfully'){
+              create_ui(json.dir, json.directory_name, true)
+            }
+            $('#close_create').trigger('click')
+            console.log(json)
+          }
+        ).catch(
+          error => console.log(error) // Handle the error response object
+        );
+      };
+    
+
+
+    function delete_node(node){
+        node.preventDefault()
+        var parent_node = node.currentTarget.parentNode
+        var str = "#name"+parent_node.id
+        var confirm = window.confirm("Are You Sure You Want To Delete "+$(str).text()+"?")
+        if(confirm){
+            //delete_node
+            fetch('/api/'+parent_node.id, { // Your DELETE endpoint
+                method: 'DELETE',
+                headers: {
+                  "X-CSRFToken": token,
+                  "Accept":'application/json',
+                }
+              }).then(
+                response => response.json() // if the response is a JSON object
+              ).then(
+                (json) => {
+                  message(json, "info")
+                  console.log("delete")
+                  if(json = "Folder Deleted Successfully"){
+                      parent_node.remove()
+                      console.log("deleted node ",parent_node.id)
+                  }
+                  
+                }
+              ).catch(
+                error => console.log(error) // Handle the error response object
+              );
+            
+        }
+    }
+
+    function navigate(event, link){
+        event.preventDefault();
+        window.location.href = link;
+    }
+
+    function message(msg, tag){
+        var node_html = `<li class="text-center alert alert-${tag}">
+            ${msg}
+            <span id='close' class="fas fa-times-circle" onclick='this.parentNode.parentNode.removeChild(this.parentNode)'></span>
+        </li>`
+
+        var id = document.getElementById('msg_arr')
+        id.innerHTML += node_html
+    }
+
+    function create_ui(dir, directory_name, is_directory){
+      var folder = `
+      <div id="${dir}" ondblclick="navigate(event,'/dashboard/${dir}')" class="glass box">
+        <div onclick="delete_node(event)" class="delete fas fa-times-circle" style="margin-bottom:20px;"></div>
+        <span class="fas fa-folder"></span>
+        <div style="text-transform:capitalize;" id="name${dir}">${directory_name}</div>
+      </div>
+    `
+    var image = `
+    <div id="${dir}" ondblclick="navigate(event,'/edit/${dir}')" class="glass box bg-primary text-white">
+      <div onclick="delete_node(event)" class="delete fas fa-times-circle" style="margin-bottom:20px;color:tomato"></div>
+      <span class=" fas fa-file"></span>
+      <div style="text-transform:capitalize;" id="name${dir}">${directory_name}</div>
+    </div>
+    `
+
+    if(is_directory == true){
+      document.getElementById('main').innerHTML += folder
+    }
+    else{
+      document.getElementById('main').innerHTML += image
+    }
+    }
+</script>
+
+{% endblock %}
+

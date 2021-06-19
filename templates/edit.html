@@ -1,0 +1,334 @@
+
+{% extends "header.html" %}
+
+{% block content %} 
+
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.css" integrity="sha512-NCJ1O5tCMq4DK670CblvRiob3bb5PAxJ7MALAz2cV40T9RgNMrJSAwJKy0oz20Wu7TDn9Z2WnveirOeHmpaIlA==" crossorigin="anonymous" />
+<style>
+    /* Ensure the size of the image fit the container perfectly */
+    body{
+        background: rgb(39, 39, 39);
+        background-size:200% 200%;
+    }
+    #crop-id {
+        display: block;
+    
+        /* This rule is very important, please don't ignore this */
+        max-width: 100%;
+    }
+    .icon-bar {
+        width: auto;
+        background-color: rgb(68, 68, 68);
+        transform: translate(-50%,-50%);
+        left:50%;
+        top:5%;
+        position:fixed;
+        z-index:10;
+      }
+      .bottom-bar {
+        background-color: rgb(68, 68, 68);
+        z-index:10;
+      }
+      .bottom-bar > div{
+          margin:0 10px;
+      }
+      
+      .icon-bar a {
+        float: left;
+        width: 50px;
+        text-align: center;
+        padding: 12px 0;
+        transition: all 0.3s ease;
+        color: white;
+      }
+      
+      .icon-bar a:hover {
+        background-color: rgb(175, 175, 175);
+      }
+      
+      .agree {
+        background-color: green;
+      }
+      .cancel{
+          background-color: red;
+      }
+
+      .settings-box{
+        background-color: rgb(68, 68, 68);
+        border-radius:15px;
+        padding:20px;
+        margin-top:10px;
+      }
+
+
+</style>
+<div>
+	<div style="margin-top:20px;">
+		<div class="">
+            <div>
+                <div class="col-md-12 text-center text-white">
+                    <h3>Editor</h3>
+                </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    
+                    <div class="settings-box"style="max-width:100%;">
+                        <img id="crop-id" style="max-height:80vh;" src="{{image.image_path.url}}">
+                    </div>
+                </div>
+                
+            </div>
+			<div>
+                <img id="base" style="display:none;" src="{{image.image_path.url}}">
+            </div>
+
+                
+            </div>
+            <div class="row text-white mt-4 mb-5">
+                <div class="col-md-8 container mt-3">
+                    <div class="d-flex align-items-center settings-box justify-content-around">
+                        <span>Brightness</span><input type="range" min=-1 max=1 step=0.1 class="form-range flex-grow-1 col-md-6" onchange="update(event)" id="Brightness">
+                    </div>
+                    <div class="d-flex align-items-center settings-box justify-content-around">
+                        <span>Saturation</span><input type="range" min=0 max=1 step=0.1 value=1 class="form-range flex-grow-1 col-md-6" onchange="update(event)" id="Saturation">
+                    </div>
+                    <div class="d-flex align-items-center settings-box justify-content-around">
+                        <span>Contrast</span><input type="range" min=-1 max=1 step=0.1 class="form-range flex-grow-1 col-md-6" onchange="update(event)" id="Contrast">
+                    </div>
+                    <div class="d-flex align-items-center settings-box justify-content-around">
+                        <span>Vingette</span><input type="range" min=0 max=1 step=0.1 value=0 class="form-range flex-grow-1 col-md-6" onchange="update(event)" id="Vingette">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class=" d-flex flex-column justify-content-center align-items-center settings-box mt-3">
+                        <div class="btn btn-lg btn-primary" style="font-size:15px;" onclick="create()"><span  class="fas fa-cut"></span> Crop</div>
+                        <div class="btn btn-lg bg-white mt-2" style="font-size:15px;" id="B&W" onclick="update(event)"><span class="fas fa-tint-slash"></span> B&W</div>
+                        <div class="btn btn-lg btn-warning mt-2" style="font-size:15px;" id="Sepia" onclick="update(event)"><span class="fas fa-tint"></span> Sepia</div>
+                        
+
+                    </div>
+                    <div class="d-flex flex-row justify-content-around settings-box mt-4">
+                        <div class="btn btn-lg btn-success" style="font-size:15px;" onclick="upload_image()"><span class="fas fa-check"></span> Save</div>
+                        <div class="btn btn-lg btn-danger" style="font-size:15px;" onclick="window.history.back()"><span class="fas fa-times"></span> Cancel</div>
+                    </div>
+
+                    
+                </div>
+                <div class="d-flex flex-row justify-content-center align-items-center settings-box mx-auto">
+                    <div class="col-md-12 btn btn-lg btn-success" style="font-size:15px;" onclick="save_image()"><span class="fas fa-download"></span> Download</div>
+                </div>
+                
+        
+            </div>
+		</div>
+		
+	</div>
+</div>
+
+<div class="icon-bar" id="toolbar" style="display:none;">
+    <a onclick="cropper.zoom(-0.1);"><i class="fas fa-search-minus"></i></a> 
+    <a onclick="cropper.zoom(0.1);"><i class="fas fa-search-plus"></i></a> 
+    <a onclick="scale_h()"><i class="fas fa-arrows-alt-h"></i></a> 
+    <a onclick="scale_v()"><i class="fas fa-arrows-alt-v"></i></a> 
+    <a onclick="cropper.rotate(-90)"><i class="fas fa-undo"></i></a> 
+    <a onclick="cropper.rotate(90)"><i class="fas fa-redo"></i></a> 
+    <a class="cancel" onclick="remove_cropper()"><i class="fa fa-times-circle"></i></a> 
+    <a class="agree" onclick="crop()" ><i class="fa fa-check-circle"></i></a> 
+</div>
+
+<script src="{% static 'js/vintage.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.11/cropper.min.js" integrity="sha512-FHa4dxvEkSR0LOFH/iFH0iSqlYHf/iTwLc5Ws/1Su1W90X0qnxFxciJimoue/zyOA/+Qz/XQmmKqjbubAAzpkA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin="anonymous"></script>
+
+
+<script>
+    var cropper;
+    var h = 1;
+    var v = 1;
+    var defaults = {
+        width: 160,
+        height: 90,
+        minWidth: 256,
+        minHeight: 256,
+        maxWidth: 4096,
+        maxHeight: 4096,
+        fillColor: '#fff',
+        imageSmoothingEnabled: false,
+        imageSmoothingQuality: 'high',
+    }
+
+    var effects = {
+        vignette: 0, //0 to 1 default 0
+        brightness: 0,  //-1 to 1
+        saturation:1, // 0 to 1
+        contrast:0,  //-1 to 1
+        sepia: false,
+        gray:false,
+        
+    };
+
+    const srcEl = document.getElementById('crop-id');
+    const baseData = document.getElementById('base');
+
+
+    function create(){
+        document.getElementById('toolbar').style.display = "block"
+        const image = document.getElementById('crop-id');
+        cropper = new Cropper(image, {
+            aspectRatio: 16 / 9,
+        });
+    }
+
+    function scale_h(){
+        if(h){
+            cropper.scale(-1, 1);
+            h = 0;
+        }
+        else{
+            cropper.scale(1, 1);
+            h = 1;
+        }
+        
+    }
+
+    function scale_v(){
+        if(v){
+            cropper.scale(1, -1);
+            v = 0;
+        }
+        else{
+            cropper.scale(1, 1);
+            v = 1;
+        }
+        
+    }
+
+    function remove_cropper() {
+        document.getElementById('toolbar').style.display = "none"
+        cropper.scale(-1);
+        cropper.destroy()
+    }
+
+    function crop(){
+        console.log(cropper.getData())
+        cropper.getCroppedCanvas(defaults).toBlob((blob) => {
+            
+            srcEl.src = URL.createObjectURL(blob);
+            baseData.src = URL.createObjectURL(blob);
+            remove_cropper()
+        })
+    }
+    
+    
+
+    function update(event){
+        
+        if(event.target.id == "Brightness"){
+            effects.brightness = Number(event.target.value)
+        }
+        else if(event.target.id == "Saturation"){
+            effects.saturation = Number(event.target.value)
+        }
+        else if(event.target.id == "Contrast"){
+            effects.contrast = Number(event.target.value)
+        }
+        else if(event.target.id == "Vingette"){
+            effects.vignette = Number(event.target.value)
+        }
+        else if(event.target.id == "Sepia"){
+            if(effects.sepia == false){
+                effects.sepia = true
+            } 
+            else{
+                effects.sepia = false
+            }
+        }
+        else if(event.target.id == "B&W"){
+            if(effects.gray == false){
+                effects.gray = true
+            } 
+            else{
+                effects.gray = false
+            }
+        }
+
+        else{
+            console.log("sike")
+        }
+        vintagejs(baseData, effects)
+        .then(res => {
+            srcEl.src = res.getDataURL()
+        });
+    }
+
+    function save_image(){
+        // Must use FileSaver.js 2.0.2 because 2.0.3 has issues.
+
+        let imagePath = srcEl.getAttribute('src');
+        let fileName = getFileName(imagePath);
+        saveAs(imagePath, fileName); 
+        
+    }
+
+    function getFileName(str) {
+        return "download"
+    }
+
+
+    var upload_file_url = "/edit/api/{{home_dir.pk}}"
+    var token = '{{csrf_token}}';
+    var formData = new FormData()
+
+    const upload_image = () => {
+
+        formData.append("directory_name", "{{home_dir.directory_name}}")
+
+        var c = document.createElement("canvas");
+        var ctx = c.getContext("2d");
+        var results;
+        c.width = srcEl.naturalWidth;     // update canvas size to match image
+        c.height = srcEl.naturalHeight;
+        ctx.drawImage(srcEl, 0, 0);       // draw in image
+        c.toBlob(function(blob) {        // get content as JPEG blob
+            results = blob
+            console.log(results)
+        
+        var blob = new Blob([results], {type : 'image/png'});
+        var fileOfBlob = new File([blob], 'modified_image.png');
+        formData.append("image_path", fileOfBlob)
+        console.log(formData);
+
+        fetch(upload_file_url, { // Your POST endpoint
+          method: 'POST',
+          headers: {
+            "X-CSRFToken": token,
+            "Accept":'application/json',
+          },
+          body: formData // This is your file object
+        }).then(
+          response => response.json() // if the response is a JSON object
+        ).then(
+          (json) => {
+                message(json, "info")
+                $('#close_upload').trigger('click')
+                console.log(json)
+          }
+        ).catch(
+          error => console.log(error) // Handle the error response object
+        );
+        }, "image/png", 0.75);
+
+        
+      };
+
+      function message(msg, tag){
+        var node_html = `<li class="text-center alert alert-${tag}">
+            ${msg}
+            <span id='close' class="fas fa-times-circle" onclick='this.parentNode.parentNode.removeChild(this.parentNode)'></span>
+        </li>`
+
+        var id = document.getElementById('msg_arr')
+        id.innerHTML += node_html
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+
+{% extends "header.html" %}
+
+{% block content %} 
+
+{% load static %}
+
+<style>
+
+.features{
+	
+    background: linear-gradient(-190deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    box-shadow: 0 8px 32px 0 rgba(4, 4, 7, 0.3);
+    backdrop-filter: blur( 10.0px );
+    -webkit-backdrop-filter: blur( 7.0px );
+    border-radius: 15px;
+    margin:10px;
+	color:white;
+	font-weight:bold;
+}
+</style>
+<div class="d-flex justify-content-center align-items-center mt-5">
+	<div class="container" >
+		<div class="row">
+			<div class="col-md-5 mt-3">
+				<div class="d-flex flex-column justify-content-center align-items-center glass" style="height:80vh;">
+					<img class="img-responsive mb-1" style="width:30%;" src="{% static 'img/lens2.png' %}" alt="LOGO">
+					<h1 class="text-center" style="margin:20px;">Welcome to Pixlr </h1>
+					<h1 class="text-center">📸</h1>
+					
+					<h6 class="text-center">Your One Stop Photo Editing App</h6>
+				</div>
+			</div>
+			<div class="col-md-7 mt-3">
+				
+				<div class="d-flex flex-column justify-content-center align-items-center glass" style="height:80vh;">
+					<div style="margin:30px;">
+						<h3 class="text-center">Pixlr Is A Free To Use Photo Editing App, Which Allows Users To</h4>
+						<div class="d-flex justify-content-center">
+							<div class="features" style="padding:15px;">
+								Edit Photos 	
+							</div>
+							<div class="features" style="padding:15px;">
+								Manage Photos 	
+							</div>
+							<div class="features" style="padding:13px;">
+								Organise Photos 	
+							</div>
+						</div>
+						<div class="mt-3 d-flex justify-content-center">
+							
+							{% if home_dir == -1 %}
+								<a href="{% url 'login' %}" class="btn custom-btn btn-lg">Get Started</a>
+							{% else %}
+								<a href="{% url 'dashboard' dir=home_dir %}" class="btn custom-btn btn-lg">Get Started</a>
+							{% endif %}
+								
+							
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</div>
+
+
+
+{% endblock %}
